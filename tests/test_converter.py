@@ -1,9 +1,9 @@
-import os
+import osQtCore
 
-import src.utils.converter as converter
-import src.utils.general_utils as general_utils
-import src.utils.validations as validations
-from src.utils.enumerators import BBFormat, BBType, CoordinatesType
+import odmetrics.utils.converter as converter
+import odmetrics.utils.general_utils as general_utils
+import odmetrics.utils.validations as validations
+from odmetrics.utils.enumerators import BBFormat, BBType, CoordinatesType
 
 
 def test_converters_gts():

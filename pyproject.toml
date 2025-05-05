@@ -1,0 +1,20 @@
+[project]
+name = "object-detection-metrics"
+version = "0.0.1"
+authors = [
+  { name="Rafael Padilla" },
+]
+description = "Object detection metrics."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = ["opencv-python","PyQt5"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+[tool.hatch.build.targets.wheel]
+packages = ["src/odmetrics"]
