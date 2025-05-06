@@ -83,7 +83,8 @@ def get_pascalvoc_metrics(gt_boxes,
                           det_boxes,
                           iou_threshold=0.5,
                           method=MethodAveragePrecision.EVERY_POINT_INTERPOLATION,
-                          generate_table=False):
+                          generate_table=False,
+                          eps=0.):
     """Get the metrics used by the VOC Pascal 2012 challenge.
     Args:
         boundingboxes: Object of the class BoundingBoxes representing ground truth and detected
@@ -157,7 +158,7 @@ def get_pascalvoc_metrics(gt_boxes,
             for j, g in enumerate(gt):
                 # print('Ground truth gt => %s' %
                 #       str(g.get_absolute_bounding_box(format=BBFormat.XYX2Y2)))
-                iou = BoundingBox.iou(det, g)
+                iou = BoundingBox.iou(det, g, eps)
                 if iou > iouMax:
                     iouMax = iou
                     id_match_gt = j

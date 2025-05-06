@@ -5,6 +5,7 @@ from .utils.general_utils import (convert_to_absolute_values,
 
 from .utils.enumerators import BBFormat, BBType, CoordinatesType
 
+import copy
 
 class BoundingBox:
     """ Class representing a bounding box. """
@@ -339,7 +340,9 @@ class BoundingBox:
         return new_bounding_box
 
     @staticmethod
-    def iou(boxA, boxB):
+    def iou(boxA, boxB, eps=0.):
+        if eps>0:
+            boxA = BoundingBox.worst_case_bbox(boxA,boxB,eps)
         coords_A = boxA.get_absolute_bounding_box(format=BBFormat.XYX2Y2)
         coords_B = boxB.get_absolute_bounding_box(format=BBFormat.XYX2Y2)
         # if boxes do not intersect
@@ -352,6 +355,24 @@ class BoundingBox:
         assert iou >= 0
         return iou
 
+    @staticmethod
+    def worst_case_bbox(boxA, boxB, eps=0.):
+        ''' add epsilon to boxA so that is maximizes IoU
+        boxA : ground truth 
+        boxB : prediction
+        eps: epsilon value
+        returns boxA shifted for worst case IoU '''
+        if isinstance(boxA, BoundingBox):
+            boxA = boxA.get_absolute_bounding_box(BBFormat.XYX2Y2)
+        if isinstance(boxB, BoundingBox):
+            boxB = boxB.get_absolute_bounding_box(BBFormat.XYX2Y2)
+            boxC = copy.copy(boxA)
+            coord = []
+            for i in range(4):
+                sign = 1.0 if boxA[i] - boxB[i] > 0 else -1.0
+                coord.append(boxA[i] * (1.0 + sign * eps))
+            boxC.set_coordinates(tuple(coord),CoordinatesType.ABSOLUTE)
+            return boxC
     # boxA = (Ax1,Ay1,Ax2,Ay2)
     # boxB = (Bx1,By1,Bx2,By2)
     @staticmethod
