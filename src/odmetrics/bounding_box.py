@@ -4,7 +4,7 @@ from .utils.general_utils import (convert_to_absolute_values,
                                      convert_to_relative_values)
 
 from .utils.enumerators import BBFormat, BBType, CoordinatesType
-
+import numpy as np
 import copy
 
 class BoundingBox:
@@ -212,6 +212,14 @@ class BoundingBox:
         """
         return self._format
 
+    def set_format(self,format):
+        """ Set the format of the bounding box (BBFormat.XYWH or BBFormat.XYX2Y2).
+            format:
+                BBFormat.XYWH: <left> <top> <width> <height>
+                BBFomat.XYX2Y2: <left> <top> <right> <bottom>.
+        """
+        self._format = format
+
     def set_class_id(self, class_id):
         self._class_id = class_id
 
@@ -269,7 +277,7 @@ class BoundingBox:
         abs_bb_xywh = self.get_absolute_bounding_box(format=BBFormat.XYWH)
         abs_bb_xyx2y2 = self.get_absolute_bounding_box(format=BBFormat.XYX2Y2)
         area = self.get_area()
-        return f'image name: {self._image_name}\nclass: {self._class_id}\nbb (XYWH): {abs_bb_xywh}\nbb (X1Y1X2Y2): {abs_bb_xyx2y2}\narea: {area}\nbb_type: {self._bb_type}'
+        return f'image name: {self._image_name}\nclass: {self._class_id}\nbb (XYWH): {abs_bb_xywh}\nbb (X1Y1X2Y2): {abs_bb_xyx2y2}\narea: {area}\nbb_type: {self._bb_type}\nformat: {self._format}'
 
     def __eq__(self, other):
         if not isinstance(other, BoundingBox):
@@ -358,20 +366,24 @@ class BoundingBox:
     @staticmethod
     def worst_case_bbox(boxA, boxB, eps=0.):
         ''' add epsilon to boxA so that is maximizes IoU
-        boxA : ground truth 
-        boxB : prediction
+        boxA : detection
+        boxB : ground truth
         eps: epsilon value
         returns boxA shifted for worst case IoU '''
+        boxC = copy.copy(boxA)
+        boxC.set_format(BBFormat.XYX2Y2)
         if isinstance(boxA, BoundingBox):
             boxA = boxA.get_absolute_bounding_box(BBFormat.XYX2Y2)
         if isinstance(boxB, BoundingBox):
             boxB = boxB.get_absolute_bounding_box(BBFormat.XYX2Y2)
-            boxC = copy.copy(boxA)
-            coord = []
+            coord = np.empty((4))
             for i in range(4):
                 sign = 1.0 if boxA[i] - boxB[i] > 0 else -1.0
-                coord.append(boxA[i] * (1.0 + sign * eps))
+                coord[i] = boxA[i] + sign * eps
+            assert coord[2] >= coord[0], f'X2 {coord[3]} < X1 {coord[1]}\n {boxA}, eps {eps}'
+            assert coord[3] >= coord[1], f'Y2 {coord[3]} < Y1 {coord[1]}\n {boxA}, eps {eps}'
             boxC.set_coordinates(tuple(coord),CoordinatesType.ABSOLUTE)
+#            print(boxA,boxB,coord)
             return boxC
     # boxA = (Ax1,Ay1,Ax2,Ay2)
     # boxB = (Bx1,By1,Bx2,By2)

@@ -90,6 +90,7 @@ def get_pascalvoc_metrics(gt_boxes,
         boundingboxes: Object of the class BoundingBoxes representing ground truth and detected
         bounding boxes;
         iou_threshold: IOU threshold indicating which detections will be considered TP or FP
+        eps: worst uncertainty on bb detection
         (dget_pascalvoc_metricsns:
         A dictioanry contains information and metrics of each class.
         The key represents the class and the values are:
@@ -158,7 +159,9 @@ def get_pascalvoc_metrics(gt_boxes,
             for j, g in enumerate(gt):
                 # print('Ground truth gt => %s' %
                 #       str(g.get_absolute_bounding_box(format=BBFormat.XYX2Y2)))
+                iou0 = BoundingBox.iou(det, g, 0)
                 iou = BoundingBox.iou(det, g, eps)
+                assert iou<=iou0,f'iou {iou}>iou0 {iou0}\n gt {g}\n det {det}\n f2 {BoundingBox.worst_case_bbox(det,g,eps)}'
                 if iou > iouMax:
                     iouMax = iou
                     id_match_gt = j
